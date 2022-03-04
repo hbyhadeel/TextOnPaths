@@ -1,0 +1,108 @@
+// this is the starting point, not generative enough, not good
+// followed a tutorial from Processing.org/tutorials/text
+
+import processing.pdf.*;
+
+PFont f;
+
+String[] text = {"a sneak peak", "into the upcoming", "tutorial"};
+PVector[] pos;
+PVector[] tpos;
+float[] angles;
+
+boolean nextLine = false;
+
+float r, a;
+float cx, cy;
+
+long seed;
+void setup() {
+  size(720, 1240);
+  background(255);
+  
+  seed = (long)random(10000);
+  //seed = 9414;
+  println(seed);
+  randomSeed(seed);
+  
+  //beginRecord(PDF, "Output/text_on_path_"+seed+".pdf");
+
+  cx = width/2;
+  cy = height/2;
+  r = 80;
+  
+  f = createFont("Helvetica", 16);
+
+  textAlign(CENTER, CENTER);
+  textSize(20);
+  textFont(f);
+  textMode(MODEL);
+
+  //stroke(0, 30);
+  strokeWeight(30);
+  strokeCap(PROJECT);
+  noFill();
+  noLoop();
+}
+
+void draw() {
+  float preva = 0;
+
+  for (int j = text.length-1; j >= 0; j--) {
+    float arcLength = 0;
+    int charCount = text[j].length();
+    float a = -PI/1.25 + random(-0.3, 0.3);
+    //a = preva;
+
+    pos = new PVector[charCount];
+    tpos = new PVector[charCount];
+    angles = new float[charCount];
+
+    for (int i = 0; i < charCount; i++) {
+      float w = textWidth(text[j].charAt(i));
+      w = 12;
+      arcLength += w/2;
+
+      float angle = a + arcLength/r;
+      angles[i] = angle;
+
+      float xoff = 2;
+      float yoff = 0;
+      float x = cx + cos(angle) * (r+random(-xoff, xoff));
+      float y = cy + sin(angle) * (r+random(-yoff, yoff));
+
+      pos[i] = new PVector(x, y);
+
+      x = cx + cos(angle) * (r+4);
+      y = cy + sin(angle) * (r+4);
+
+      tpos[i] = new PVector(x, y);
+
+      arcLength += w/2;
+
+      // if I wanted the second circle to start at the end
+      // of the previous circle
+      //preva = anglex;
+    }
+    r += 30;
+
+    beginShape();
+    curveVertex(pos[0].x, pos[0].y);
+    for (int i = 0; i < charCount; i++) {
+      curveVertex(pos[i].x, pos[i].y);
+    }
+    curveVertex(pos[charCount-1].x, pos[charCount-1].y);
+    endShape();
+
+    for (int i = 0; i < charCount; i++) {
+      push();
+      fill(255, 0, 0);
+      translate(pos[i].x, pos[i].y);
+      rotate(angles[i]+PI/2);
+      text(text[j].charAt(i), 0, 0);
+      pop();
+    }
+  }
+  
+  //endRecord();
+}
