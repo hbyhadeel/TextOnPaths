@@ -1,0 +1,92 @@
+PFont f;
+String t = "";
+
+ArrayList<TextCurve> tcs = new ArrayList<TextCurve>();
+
+color bgCol = #F2F2EB;
+color[] cols = {#2B4C8C, #7798D9, #A6367B, #FF6561, #00343B};
+
+float strokeW = 30;
+float margin = 120;
+
+long seed;
+
+void setup() {
+  size(1080, 1080);
+  pixelDensity(2);
+  background(bgCol);
+
+  seed = (long)random(10000);
+  //seed = 8422;
+  println(seed);
+  randomSeed(seed);
+  noiseSeed(seed);
+
+  f = createFont("Helvetica", 18);
+  
+  // join all paragraphs from file into one string
+  t = join(loadStrings("text.txt"), " ");
+  
+  // text settings
+  textAlign(CENTER, CENTER);
+  textFont(f);
+  textMode(MODEL);
+  
+  // curves settings
+  stroke(0);
+  strokeWeight(strokeW);
+
+  noFill();
+  
+  // starting radius
+  int r = 250;
+  int i = 0;
+  // this part needs more work :)
+  while (t.length() > 0) {
+    tcs.add(new TextCurve(t, r, PI+QUARTER_PI));
+    if (r >= tcs.get(i).minR) {
+      int newLen = tcs.get(i).calculate();
+      t = t.substring(newLen);
+      tcs.get(i).addPoints();
+      if (newLen == 0) {
+        tcs.get(i).addPoints();
+        break;
+      }
+
+      r -= strokeW;
+    } else {
+      tcs.remove(i);
+      break;
+    }
+    i++;
+  }
+
+  //noLoop();
+}
+
+void draw() {
+  background(bgCol);
+
+  for (TextCurve tc : tcs) {
+    if (tc.pos.size() > 0) {
+      tc.drawCurve();
+      tc.drawText();
+      tc.updatePoints();
+    }
+  }
+  
+  // save after animation is done
+  //if (frameCount > 18) {
+  //  save("Output_still/"+seed+".png");
+  //  noLoop();
+  //}
+}
+
+// save with a key press
+void keyPressed() {
+  if (key == CODED) {
+    if (keyCode == ALT) {
+      save("Output_still/"+seed+".png");
+    }
+  }
+}
